@@ -1,0 +1,36 @@
+-- create a mushroom store database
+CREATE TABLE mushrooms_r_us (id integer PRIMARY KEY, name text, cost integer, edible text, seasonal text);
+
+INSERT INTO mushrooms_r_us VALUES (1, 'morels', 12.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (2, 'button', 3.00, 'yes', 'no');
+INSERT INTO mushrooms_r_us VALUES (3, 'wine caps', 4.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (4, 'golden oysters', 10.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (5, 'snow oysters', 10.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (6, 'shiitake', 11.00, 'yes', 'no');
+INSERT INTO mushrooms_r_us VALUES (7, 'chestnut', 10.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (8, 'lions mane', 9.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (9, 'portabello', 6.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (10, 'blewits', 7.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (11, 'black morels', 13.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (12, 'turkey tail', 6.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (13, 'chanterelles', 13.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (14, 'sweet tooth', 8.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (15, 'hen of the woods', 9.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (16, 'shaggy mane', 8.00, 'yes', 'yes');
+INSERT INTO mushrooms_r_us VALUES (17, 'amanita', 12.00, 'no', 'yes');
+INSERT INTO mushrooms_r_us VALUES (18, 'cortinarius', 14.00, 'no', 'yes');
+
+-- select all columns in the database and order by cost
+SELECT *
+FROM mushrooms_r_us
+ORDER BY cost;
+
+-- count the number of types of mushrooms for sale that cost more than $7
+SELECT COUNT(name) AS 'number_of_mushrooms_over_7_dollars'
+FROM mushrooms_r_us
+WHERE cost > 7;
+
+-- find the average cost of an edible mushroom that is not seasonal
+SELECT ROUND(AVG(cost), 2) AS avg_cost_nonseasonal_edible
+FROM mushrooms_r_us
+WHERE edible = 'yes' AND seasonal = 'yes'
