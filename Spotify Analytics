@@ -1,0 +1,62 @@
+-- For this project, I downloaded Spotify data from Kaggle and created a table to insert the Spotify data into.
+-- I then performed analytics on the data using SQL.
+
+CREATE TABLE BIT_DB.Spotifydata (
+    id               INTEGER        PRIMARY KEY,
+    artist_name      VARCHAR        NOT NULL,
+    track_name       VARCHAR        NOT NULL,
+    track_id         VARCHAR        NOT NULL,
+    popularity       INTEGER        NOT NULL,
+    danceability     DECIMAL (4, 3) NOT NULL,
+    energy           DECIMAL (4, 3) NOT NULL,
+    [key]            INTEGER        NOT NULL,
+    loudness         DECIMAL (5, 3) NOT NULL,
+    mode             INTEGER        NOT NULL,
+    speechiness      DECIMAL (5, 4) NOT NULL,
+    acousticness     DECIMAL (6, 5) NOT NULL,
+    instrumentalness TEXT           NOT NULL,
+    liveness         DECIMAL (5, 4) NOT NULL,
+    valence          DECIMAL (4, 3) NOT NULL,
+    tempo            DECIMAL (6, 3) NOT NULL,
+    duration_ms      INTEGER        NOT NULL,
+    time_signature   INTEGER        NOT NULL
+);
+
+-- find the average popularity for songs with danceability greater than .7
+SELECT AVG(popularity) 
+  FROM BIT_DB.Spotifydata
+ WHERE danceability > 0.7;
+ 
+-- find the average popularity for songs with danceability less than .3
+SELECT AVG(popularity) 
+  FROM BIT_DB.Spotifydata
+ WHERE danceability < 0.4;
+ 
+-- find all of the Olivia Rodrigo songs with a tempo greater than 100
+SELECT track_name,
+       tempo
+  FROM BIT_DB.Spotifydata
+ WHERE artist_name = 'Olivia Rodrigo' AND 
+       tempo > 100;
+       
+-- apply a popularity rating to all songs from artists whose name begins with an 'A' or 'B'
+SELECT artist_name,
+       track_name,
+       CASE popularity
+       WHEN popularity > 80 THEN "Above Average"
+       WHEN popularity > 50 THEN "Average"
+       ELSE "Below Average"
+       END AS popularity_rating
+FROM BIT_DB.Spotifydata
+WHERE artist_name LIKE "A%" OR artist_name LIKE "B%";
+
+--Who are the top 10 artists based on popularity?
+SELECT artist_name, popularity
+FROM BIT_DB.Spotifydata
+ORDER BY popularity DESC
+LIMIT 10;
+
+--What's the average danceability for the 10 most popular songs?
+SELECT AVG(danceability)
+FROM BIT_DB.Spotifydata
+WHERE (SELECT danceability FROM BIT_DB.Spotifydata ORDER BY popularity LIMIT 10);
