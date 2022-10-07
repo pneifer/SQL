@@ -1,0 +1,33 @@
+-- Get the customers
+-- Who live in Virginia
+-- Who have spent more than $100
+
+Use sql_store;
+
+SELECT	c.customer_id
+		    ,c.first_name
+        ,c.last_name
+        ,c.state
+        ,SUM(i.invoice_total) as total_amount_spent
+	FROM customers c
+JOIN sql_invoicing.invoices i
+ON c.customer_id = i.client_id
+    WHERE c.state = 'VA'
+GROUP BY c.customer_id
+HAVING total_amount_spent > 100;
+
+-- alternate query to produce the same results
+
+SELECT 	c.customer_id
+		,c.first_name
+        ,c.last_name
+        ,c.state
+        ,SUM(oi.quantity * oi.unit_price) AS total_spent
+FROM customers c
+JOIN orders o
+USING (customer_id)
+JOIN order_items oi
+ON o.order_id = oi.order_id
+WHERE c.state = 'VA'
+GROUP BY c.customer_id
+HAVING total_spent > 100;
