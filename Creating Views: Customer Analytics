@@ -1,0 +1,16 @@
+-- Create a View to see the balance for each client
+-- name the View clients_balance
+-- include client id, client name, and client balance in the table
+
+USE sql_invoicing;
+
+CREATE VIEW clients_balance AS
+SELECT
+	i.client_id
+    , c.name
+    , SUM(i.invoice_total - i.payment_total) AS balance
+FROM
+	invoices i
+JOIN
+	clients c USING (client_id);
+GROUP BY client_id;
