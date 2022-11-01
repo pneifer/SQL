@@ -1,0 +1,157 @@
+SELECT *
+FROM [Portfolio Project].dbo.CovidDeaths
+where continent is not null
+ORDER BY 3, 4
+
+--SELECT *
+--FROM [Portfolio Project].dbo.CovidVaccinations
+--ORDER BY 3, 4
+
+-- Select the data that we will be using
+
+Select location, date, total_cases, new_cases, total_deaths, population
+FROM [Portfolio Project].dbo.CovidDeaths
+where continent is not null
+Order by 1,2
+
+-- Likelihood of dying if you contract Covid in the United States today
+
+Select location, date, total_cases, total_deaths, (total_deaths/total_cases)*100 as DeathPercentage
+FROM [Portfolio Project].dbo.CovidDeaths
+Where location like '%states%' and continent is not null
+Order by 1,2
+
+-- Shows what percentage of population contracted Covid
+
+Select location, date, total_cases, population, (total_cases/population)*100 as PercentPopulationInfected
+FROM [Portfolio Project].dbo.CovidDeaths
+Where location like '%states%' and and continent is not null
+Order by 1,2
+
+-- Countries with highest infection rate compated to population
+
+Select location, population, max(total_cases) as HighestInfectionCount, Max((total_cases/population))*100 as MaxPercentPopulationInfected
+FROM [Portfolio Project].dbo.CovidDeaths
+-- Where location like '%states%'
+where continent is not null
+Group By location, population
+Order by MaxPercentPopulationInfected desc
+
+-- Countries with the hightest death count per population
+
+Select location, max(cast(total_deaths as int)) as TotalDeathCount
+FROM [Portfolio Project].dbo.CovidDeaths
+-- Where location like '%states%'
+where continent is not null
+Group By location
+Order by TotalDeathCount desc
+
+-- Deeper dive by continent
+-- Continents with the highest death count per population
+
+Select location, max(cast(total_deaths as int)) as TotalDeathCount
+FROM [Portfolio Project].dbo.CovidDeaths
+-- Where location like '%states%'
+where continent is null
+Group By location
+Order by TotalDeathCount desc
+
+Select continent, max(cast(total_deaths as int)) as TotalDeathCount
+FROM [Portfolio Project].dbo.CovidDeaths
+-- Where location like '%states%'
+where continent is not null
+Group By continent
+Order by TotalDeathCount desc
+
+-- Global Numbers
+Select date, SUM(new_cases) as TotalCases, sum(cast(new_deaths as int)) as TotalDeaths, sum(cast(new_deaths as int))/sum(new_cases)*100 as DeathPercentage
+FROM [Portfolio Project].dbo.CovidDeaths
+Where continent is not null
+Group by date
+Order by 1,2
+
+Select SUM(new_cases) as TotalCases, sum(cast(new_deaths as int)) as TotalDeaths, sum(cast(new_deaths as int))/sum(new_cases)*100 as DeathPercentage
+FROM [Portfolio Project].dbo.CovidDeaths
+Where continent is not null
+-- Group by date
+Order by 1,2
+
+-- Total population vs vaccinations
+
+Select d.continent, d.location, d.date, v.population, d.new_vaccinations,
+sum(cast(d.new_vaccinations as int)) over (partition by d.location order by d.location, d.date) as RollingPeopleVaccinated
+-- RollingPeopleVaccinated/total_population
+From [Portfolio Project].dbo.CovidVaccinations d
+Join [Portfolio Project].dbo.CovidDeaths v
+ON d.location = v.location and d.date = v.date
+where d.continent is not null
+order by 2, 3
+
+-- use CTE
+
+With PopvsVac (Continent, Location, Date, Population, new_vaccinations, RollingPeopleVaccinated)
+as (
+Select d.continent, d.location, d.date, v.population, d.new_vaccinations,
+sum(cast(d.new_vaccinations as int)) over (partition by d.location order by d.location, d.date) as RollingPeopleVaccinated
+-- RollingPeopleVaccinated/total_population
+From [Portfolio Project].dbo.CovidVaccinations d
+Join [Portfolio Project].dbo.CovidDeaths v
+ON d.location = v.location and d.date = v.date
+where d.continent is not null
+-- order by 2, 3
+)
+
+select *, RollingPeopleVaccinated/Population*100
+from PopvsVac
+
+
+-- Temp Table
+
+Drop table if exists #PercentPopulationVaccinated
+Create Table #PercentPopulationVaccinated
+(
+Continent nvarchar(255),
+Location nvarchar(255),
+Date datetime,
+Population numeric,
+New_vaccinations numeric,
+RollingPeopleVaccinated numeric
+)
+
+
+Insert into #PercentPopulationVaccinated
+Select d.continent, d.location, d.date, v.population, d.new_vaccinations,
+sum(cast(d.new_vaccinations as int)) over (partition by d.location order by d.location, d.date) as RollingPeopleVaccinated
+-- RollingPeopleVaccinated/total_population
+From [Portfolio Project].dbo.CovidVaccinations d
+Join [Portfolio Project].dbo.CovidDeaths v
+ON d.location = v.location and d.date = v.date
+where d.continent is not null
+-- order by 2, 3
+
+select *, RollingPeopleVaccinated/Population*100
+from #PercentPopulationVaccinated
+
+-- Create view to store data for visualization later in Tableau
+
+Create view PercentPopulationVaccinated
+as
+Select d.continent, d.location, d.date, v.population, d.new_vaccinations,
+sum(cast(d.new_vaccinations as int)) over (partition by d.location order by d.location, d.date) as RollingPeopleVaccinated
+-- RollingPeopleVaccinated/total_population
+From [Portfolio Project].dbo.CovidVaccinations d
+Join [Portfolio Project].dbo.CovidDeaths v
+ON d.location = v.location and d.date = v.date
+where d.continent is not null
+-- order by 2, 3
+
+Select *
+From PercentPopulationVaccinated
+
+Create view Diabetes_compared_to_GDP
+as
+Select d.location, max(d.diabetes_prevalence) as DiabetesPrevalence, Round(Max(gdp_per_capita), 0) as GDPperCapita
+From [Portfolio Project].dbo.CovidVaccinations as d
+Where d.continent is not null
+Group By d.location
+--order by location
